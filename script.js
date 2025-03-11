@@ -623,7 +623,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 // Toon popup voor goede online veiligheid
-                showSecurityPopup();
+                showSecurityPopup({
+                    details: 'Privé IP-adres gedetecteerd',
+                    provider: 'Lokaal netwerk'
+                });
                 
                 return {
                     hidden: true,
@@ -665,22 +668,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 orgName.includes(keyword) || asnName.includes(keyword)
             );
             
-            if (isVpnOrProxy) {
+            // Voer een extra VPN-detectie uit met een gespecialiseerde API
+            const vpnDetectionResult = await checkVPNWithSpecializedAPI(ip);
+            
+            if (isVpnOrProxy || vpnDetectionResult.isVPN) {
+                // Bepaal de reden voor de detectie
+                let detectionReason = '';
+                if (isVpnOrProxy) {
+                    detectionReason = `Organisatie/ASN bevat VPN-gerelateerde trefwoorden (${vpnData.org || 'Onbekend'})`;
+                }
+                if (vpnDetectionResult.isVPN) {
+                    detectionReason = detectionReason ? 
+                        `${detectionReason} en gedetecteerd door VPN-detectie API (${vpnDetectionResult.reason})` : 
+                        `Gedetecteerd door VPN-detectie API (${vpnDetectionResult.reason})`;
+                }
+                
                 // Log dat het IP-adres een VPN/proxy is
                 logAction('ip_hidden_check', { 
                     success: true,
                     ip: ip,
                     is_hidden: true,
                     reason: 'vpn_proxy_detected',
-                    provider: vpnData.org
+                    provider: vpnData.org || 'Onbekend',
+                    detection_method: detectionReason
                 });
                 
                 // Toon popup voor goede online veiligheid
-                showSecurityPopup();
+                showSecurityPopup({
+                    details: detectionReason,
+                    provider: vpnData.org || 'Onbekend',
+                    vpnType: vpnDetectionResult.isVPN ? vpnDetectionResult.reason : 'VPN/Proxy'
+                });
                 
                 return {
                     hidden: true,
-                    reason: `Je gebruikt waarschijnlijk een VPN of proxy (${vpnData.org}).`
+                    reason: `Je gebruikt waarschijnlijk een VPN of proxy (${vpnData.org || 'Onbekend'}).`,
+                    details: detectionReason
                 };
             }
             
@@ -713,6 +736,87 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Functie om VPN te detecteren met een gespecialiseerde API
+    async function checkVPNWithSpecializedAPI(ip) {
+        try {
+            // Gebruik ipqualityscore.com API voor VPN/proxy detectie
+            // Gratis tier heeft beperkte aanvragen, maar is effectief voor VPN detectie
+            // Vervang YOUR_API_KEY met een echte API key als je deze wilt gebruiken
+            const API_KEY = 'YOUR_API_KEY'; // Gratis API key van ipqualityscore.com
+            
+            // Als er geen API key is, gebruik een alternatieve methode
+            if (API_KEY === 'YOUR_API_KEY') {
+                return await fallbackVPNDetection(ip);
+            }
+            
+            const response = await fetch(`https://www.ipqualityscore.com/api/json/ip/${API_KEY}/${ip}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const isVPN = data.vpn || data.proxy || data.tor;
+                let reason = [];
+                
+                if (data.vpn) reason.push('VPN');
+                if (data.proxy) reason.push('Proxy');
+                if (data.tor) reason.push('Tor');
+                
+                return {
+                    isVPN: isVPN,
+                    reason: isVPN ? reason.join('/') : 'Geen VPN gedetecteerd',
+                    fraudScore: data.fraud_score,
+                    isp: data.ISP,
+                    organization: data.organization,
+                    details: data
+                };
+            } else {
+                // Als de API call mislukt, val terug op de alternatieve methode
+                return await fallbackVPNDetection(ip);
+            }
+        } catch (error) {
+            console.error('Fout bij VPN detectie API:', error);
+            // Als er een fout optreedt, val terug op de alternatieve methode
+            return await fallbackVPNDetection(ip);
+        }
+    }
+    
+    // Alternatieve methode voor VPN detectie als de primaire API niet beschikbaar is
+    async function fallbackVPNDetection(ip) {
+        try {
+            // Gebruik een alternatieve gratis API voor VPN detectie
+            const response = await fetch(`https://ipinfo.io/${ip}/json`);
+            const data = await response.json();
+            
+            // Controleer op datacenter/hosting providers
+            const isHosting = data.company && data.company.domain;
+            const isDatacenter = data.privacy && data.privacy.hosting;
+            
+            // Controleer op bekende VPN-gerelateerde ASNs
+            const asnResponse = await fetch(`https://ipapi.co/${ip}/asn/`);
+            const asn = await asnResponse.text();
+            
+            // Lijst van bekende VPN ASNs (kan worden uitgebreid)
+            const vpnASNs = ['AS9009', 'AS20473', 'AS14061', 'AS16276', 'AS12876', 'AS24940', 'AS46606'];
+            const isVPNASN = vpnASNs.some(vpnASN => asn.includes(vpnASN));
+            
+            return {
+                isVPN: isHosting || isDatacenter || isVPNASN,
+                reason: isVPNASN ? 'Bekende VPN ASN' : (isHosting ? 'Hosting provider' : (isDatacenter ? 'Datacenter' : 'Geen VPN gedetecteerd')),
+                details: {
+                    hosting: isHosting,
+                    datacenter: isDatacenter,
+                    asn: asn
+                }
+            };
+        } catch (error) {
+            console.error('Fout bij fallback VPN detectie:', error);
+            return {
+                isVPN: false,
+                reason: 'Kon niet bepalen of het een VPN is',
+                error: error.message
+            };
+        }
+    }
+    
     // Functie om te controleren of een IP-adres privé is
     function isPrivateIP(ip) {
         // Eenvoudige check voor privé IP-adressen
@@ -732,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Functie om een popup te tonen voor goede online veiligheid
-    function showSecurityPopup() {
+    function showSecurityPopup(vpnDetails = null) {
         // Controleer of de popup al is getoond in deze sessie
         if (localStorage.getItem('security_popup_shown')) return;
         
@@ -740,11 +844,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const popup = document.createElement('div');
         popup.className = 'security-popup';
         
+        // Bepaal de titel en bericht op basis van de VPN-detectie
+        let title = '🔒 Goed bezig met je online veiligheid!';
+        let message = 'We hebben gedetecteerd dat je een VPN of proxy gebruikt. Dit is een uitstekende manier om je privacy online te beschermen!';
+        
+        // Als er details zijn over de VPN-detectie, toon deze
+        let detailsHtml = '';
+        if (vpnDetails) {
+            detailsHtml = `
+                <div class="vpn-details">
+                    <h3>Details van je verbinding:</h3>
+                    <ul>
+                        <li><strong>Detectiemethode:</strong> ${vpnDetails.details || 'Algemene VPN-detectie'}</li>
+                        ${vpnDetails.provider ? `<li><strong>Provider:</strong> ${vpnDetails.provider}</li>` : ''}
+                        ${vpnDetails.vpnType ? `<li><strong>Type:</strong> ${vpnDetails.vpnType}</li>` : ''}
+                    </ul>
+                </div>
+            `;
+        }
+        
         popup.innerHTML = `
             <div class="security-popup-content">
                 <span class="close-popup">&times;</span>
-                <h2>🔒 Goed bezig met je online veiligheid!</h2>
-                <p>We hebben gedetecteerd dat je een VPN of proxy gebruikt. Dit is een uitstekende manier om je privacy online te beschermen!</p>
+                <h2>${title}</h2>
+                <p>${message}</p>
+                
+                ${detailsHtml}
                 
                 <div class="security-tips">
                     <h3>Meer tips voor online veiligheid:</h3>
@@ -753,6 +878,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li>Schakel tweefactorauthenticatie in waar mogelijk</li>
                         <li>Houd je software en apparaten up-to-date</li>
                         <li>Wees voorzichtig met het klikken op links in e-mails</li>
+                        <li>Controleer regelmatig je privacy-instellingen op sociale media</li>
+                        <li>Gebruik een wachtwoordmanager voor al je accounts</li>
                     </ul>
                 </div>
                 
@@ -812,6 +939,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 color: var(--primary-color);
                 margin-top: 0;
                 margin-bottom: 15px;
+            }
+            
+            .vpn-details {
+                margin: 20px 0;
+                background-color: var(--primary-color-light);
+                padding: 15px;
+                border-radius: var(--border-radius);
+                border-left: 4px solid var(--primary-color);
+            }
+            
+            .vpn-details h3 {
+                color: var(--primary-color);
+                margin-top: 0;
+                margin-bottom: 10px;
+            }
+            
+            .vpn-details ul {
+                margin-bottom: 0;
+                padding-left: 20px;
+            }
+            
+            .vpn-details li {
+                margin-bottom: 5px;
             }
             
             .security-tips {
@@ -878,7 +1028,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Log dat de security popup is getoond
         logAction('security_popup_shown', { 
-            vpn_detected: true
+            vpn_detected: true,
+            vpn_details: vpnDetails
         });
     }
     
@@ -948,42 +1099,115 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoading(ipLookupResult);
             const ipDetails = await getIPDetails(ip);
             
-            if (!ipDetails || ipDetails.error) {
-                showResult(ipLookupResult, 'Kon geen informatie vinden voor dit IP-adres', true);
+            // Toon de resultaten
+            if (ipDetails.success) {
+                let resultHTML = `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3>IP Informatie: ${ip}</h3>
+                        </div>
+                        <div class="result-body">
+                            <div class="result-item">
+                                <span class="result-label">Land:</span>
+                                <span class="result-value">${ipDetails.country_name || 'Onbekend'} ${ipDetails.country_flag ? `<img src="${ipDetails.country_flag}" alt="${ipDetails.country_name}" class="flag-icon">` : ''}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Stad:</span>
+                                <span class="result-value">${ipDetails.city || 'Onbekend'}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">ISP:</span>
+                                <span class="result-value">${ipDetails.org || ipDetails.isp || 'Onbekend'}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Tijdzone:</span>
+                                <span class="result-value">${ipDetails.timezone || 'Onbekend'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Voeg een knop toe om te controleren of het IP verborgen is
+                resultHTML += `
+                    <button class="check-vpn-btn" data-ip="${ip}">Controleer VPN/Proxy</button>
+                `;
+                
+                showResult(ipLookupResult, resultHTML);
+                
+                // Voeg event listener toe voor de VPN check knop
+                const checkVpnBtn = ipLookupResult.querySelector('.check-vpn-btn');
+                if (checkVpnBtn) {
+                    checkVpnBtn.addEventListener('click', async function() {
+                        const ipToCheck = this.getAttribute('data-ip');
+                        
+                        // Log dat de VPN check is gestart
+                        logAction('check_ip_hidden', { 
+                            success: true,
+                            ip: ipToCheck,
+                            action: 'started'
+                        });
+                        
+                        // Toon laden
+                        this.textContent = 'Controleren...';
+                        this.disabled = true;
+                        
+                        // Controleer of het IP verborgen is
+                        const hiddenCheck = await isIPHidden(ipToCheck);
+                        
+                        // Toon het resultaat
+                        this.textContent = 'Controleer VPN/Proxy';
+                        this.disabled = false;
+                        
+                        // Voeg het resultaat toe aan de resultaatkaart
+                        const resultCard = ipLookupResult.querySelector('.result-card');
+                        if (resultCard) {
+                            const vpnResultDiv = document.createElement('div');
+                            vpnResultDiv.className = 'vpn-result';
+                            vpnResultDiv.innerHTML = `
+                                <div class="result-item">
+                                    <span class="result-label">VPN/Proxy:</span>
+                                    <span class="result-value ${hiddenCheck.hidden ? 'text-warning' : 'text-success'}">${hiddenCheck.hidden ? 'Gedetecteerd' : 'Niet gedetecteerd'}</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Details:</span>
+                                    <span class="result-value">${hiddenCheck.reason}</span>
+                                </div>
+                            `;
+                            
+                            // Voeg toe aan de resultaatkaart
+                            const resultBody = resultCard.querySelector('.result-body');
+                            if (resultBody) {
+                                // Verwijder bestaande VPN resultaat als die er is
+                                const existingVpnResult = resultBody.querySelector('.vpn-result');
+                                if (existingVpnResult) {
+                                    existingVpnResult.remove();
+                                }
+                                
+                                resultBody.appendChild(vpnResultDiv);
+                            }
+                        }
+                    });
+                }
+                
+                // Log dat de IP lookup is voltooid
+                logAction('ip_lookup', { 
+                    success: true,
+                    ip: ip,
+                    action: 'completed',
+                    country: ipDetails.country_name,
+                    city: ipDetails.city,
+                    isp: ipDetails.org || ipDetails.isp
+                });
+            } else {
+                showResult(ipLookupResult, `<div class="error-message">${ipDetails.message || 'Fout bij het ophalen van IP informatie'}</div>`, true);
                 
                 // Log de fout
                 logAction('ip_lookup', { 
                     success: false,
                     ip: ip,
-                    reason: 'no_data_found',
-                    has_error: !!ipDetails?.error
+                    error: ipDetails.message
                 });
-                
-                return;
             }
-            
-            const resultHTML = `
-                <div class="lookup-result">
-                    <p><strong>IP:</strong> ${ip}</p>
-                    <p><strong>Locatie:</strong> ${ipDetails.city}, ${ipDetails.region}, ${ipDetails.country_name}</p>
-                    <p><strong>ISP:</strong> ${ipDetails.org || 'Niet beschikbaar'}</p>
-                    <p><strong>Tijdzone:</strong> ${ipDetails.timezone} (UTC${ipDetails.utc_offset})</p>
-                </div>
-            `;
-            
-            showResult(ipLookupResult, resultHTML);
-            
-            // Log dat de IP lookup succesvol is voltooid
-            logAction('ip_lookup', { 
-                success: true,
-                ip: ip,
-                action: 'completed',
-                has_city: !!ipDetails.city,
-                has_region: !!ipDetails.region,
-                has_country: !!ipDetails.country_name,
-                has_isp: !!ipDetails.org,
-                has_timezone: !!ipDetails.timezone
-            });
         });
     }
     
@@ -1046,42 +1270,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (checkHiddenBtn) {
         checkHiddenBtn.addEventListener('click', async function() {
-            // Log dat de IP hidden check is gestart
+            // Log dat de check is gestart
             logAction('check_ip_hidden', { 
                 action: 'started'
             });
             
             showLoading(hiddenResult);
             
+            // Haal het IP-adres van de gebruiker op
             const userIP = await getUserIP();
+            
+            // Controleer of het IP verborgen is
             const hiddenCheck = await isIPHidden(userIP);
             
-            if (hiddenCheck.hidden === null) {
-                showResult(hiddenResult, hiddenCheck.reason, true);
-                
-                // Log de fout
-                logAction('check_ip_hidden', { 
-                    success: false,
-                    reason: 'check_failed'
-                });
-                
-                return;
-            }
-            
-            const resultHTML = `
-                <div class="hidden-result ${hiddenCheck.hidden ? 'hidden-yes' : 'hidden-no'}">
-                    <p><strong>${hiddenCheck.hidden ? 'Je IP-adres lijkt verborgen te zijn' : 'Je IP-adres is niet verborgen'}</strong></p>
-                    <p>${hiddenCheck.reason}</p>
+            // Toon het resultaat
+            let resultHTML = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>VPN/Proxy Check</h3>
+                    </div>
+                    <div class="result-body">
+                        <div class="result-item">
+                            <span class="result-label">IP-adres:</span>
+                            <span class="result-value">${userIP}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Status:</span>
+                            <span class="result-value ${hiddenCheck.hidden ? 'text-warning' : 'text-success'}">${hiddenCheck.hidden ? 'Je IP is verborgen' : 'Je IP is niet verborgen'}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Details:</span>
+                            <span class="result-value">${hiddenCheck.reason}</span>
+                        </div>
+                        ${hiddenCheck.details ? `
+                        <div class="result-item">
+                            <span class="result-label">Detectiemethode:</span>
+                            <span class="result-value">${hiddenCheck.details}</span>
+                        </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
             
             showResult(hiddenResult, resultHTML);
             
-            // Log dat de IP hidden check succesvol is voltooid
+            // Log het resultaat
             logAction('check_ip_hidden', { 
                 success: true,
-                action: 'completed',
-                is_hidden: hiddenCheck.hidden
+                ip: userIP,
+                is_hidden: hiddenCheck.hidden,
+                reason: hiddenCheck.reason
             });
         });
     }
