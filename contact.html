@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | MijnIPChecker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Contactformulier stijlen */
+        .contact-section {
+            padding: 80px 0;
+            background-color: var(--light-color);
+        }
+        
+        .contact-section h1 {
+            color: var(--dark-color);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .contact-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .contact-info h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .contact-info p {
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+        
+        .contact-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+        }
+        
+        .contact-card i {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .contact-card .contact-details {
+            flex: 1;
+        }
+        
+        .contact-card h3 {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .contact-form {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .contact-form h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .form-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            display: none;
+        }
+        
+        .form-message.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+            display: block;
+        }
+        
+        .form-message.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .contact-container {
+                flex-direction: column;
+            }
+            
+            .contact-section h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>MijnIP<span>Checker</span></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#ip-info">IP Info</a></li>
+                    <li><a href="index.html#tools">Tools</a></li>
+                    <li><a href="index.html#about">Over Ons</a></li>
+                    <li><a href="contact.html" class="active">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="contact-section">
+        <div class="container">
+            <h1>Neem Contact Op</h1>
+            
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h2>Hoe kunnen we je helpen?</h2>
+                    <p>Heb je vragen, opmerkingen of suggesties over MijnIPChecker? Vul het contactformulier in en we zullen zo snel mogelijk reageren. We staan altijd open voor feedback om onze diensten te verbeteren.</p>
+                    
+                    <div class="contact-card">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="contact-details">
+                            <h3>Locatie</h3>
+                            <p>Amsterdam, Nederland</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="contact-details">
+                            <h3>Openingstijden</h3>
+                            <p>Maandag - Vrijdag: 9:00 - 17:00</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <i class="fas fa-globe"></i>
+                        <div class="contact-details">
+                            <h3>Online</h3>
+                            <p>24/7 beschikbaar</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form">
+                    <h2>Stuur ons een bericht</h2>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Naam</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">E-mailadres</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject">Onderwerp</label>
+                            <select id="subject" name="subject" required>
+                                <option value="" disabled selected>Selecteer een onderwerp</option>
+                                <option value="question">Algemene vraag</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="support">Technische ondersteuning</option>
+                                <option value="privacy">Privacy gerelateerd</option>
+                                <option value="other">Anders</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Bericht</label>
+                            <textarea id="message" name="message" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Versturen</button>
+                        
+                        <div id="formMessage" class="form-message"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>MijnIP<span>Checker</span></h2>
+                    <p>© 2025 MijnIPChecker. Alle rechten voorbehouden.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#ip-info">IP Info</a></li>
+                        <li><a href="index.html#tools">Tools</a></li>
+                        <li><a href="index.html#about">Over Ons</a></li>
+                        <li><a href="contact.html" class="active">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-privacy">
+                    <h3>Privacy</h3>
+                    <ul>
+                        <li><a href="privacy.html">Privacybeleid</a></li>
+                        <li><a href="terms.html">Gebruiksvoorwaarden</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log paginabezoek als de logging functie beschikbaar is
+            if (typeof logAction === 'function') {
+                logAction('page_loaded', {
+                    page: 'contact',
+                    url: window.location.href,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            // Contactformulier afhandeling
+            const contactForm = document.getElementById('contactForm');
+            const formMessage = document.getElementById('formMessage');
+            
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Formuliergegevens ophalen
+                    const name = document.getElementById('name').value;
+                    const email = document.getElementById('email').value;
+                    const subject = document.getElementById('subject').value;
+                    const message = document.getElementById('message').value;
+                    
+                    // Log de formulierinzending als de logging functie beschikbaar is
+                    if (typeof logAction === 'function') {
+                        logAction('contact_form_submit', {
+                            subject_type: subject,
+                            has_name: !!name,
+                            has_email: !!email,
+                            message_length: message.length
+                        });
+                    }
+                    
+                    // Toon succesbericht (in een echte implementatie zou je hier een AJAX-verzoek doen)
+                    formMessage.textContent = 'Bedankt voor je bericht! We nemen zo snel mogelijk contact met je op.';
+                    formMessage.className = 'form-message success';
+                    
+                    // Reset het formulier
+                    contactForm.reset();
+                    
+                    // Scroll naar het bericht
+                    formMessage.scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mijn IP Checker | Moderne IP-adres informatie</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>MijnIP<span>Checker</span></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#ip-info">IP Info</a></li>
+                    <li><a href="#tools">Tools</a></li>
+                    <li><a href="#about">Over Ons</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Ontdek alles over je IP-adres</h1>
+                <p>Bekijk je IP-adres, locatie, ISP en meer in een moderne, veilige omgeving</p>
+                <div class="ip-display">
+                    <div class="ip-box">
+                        <h2>Jouw IP-adres</h2>
+                        <div id="ip-address">Laden...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ip-info" class="ip-details">
+        <div class="container">
+            <h2>Gedetailleerde IP Informatie</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <h3>Locatie</h3>
+                    <div id="location">Laden...</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon"><i class="fas fa-building"></i></div>
+                    <h3>ISP</h3>
+                    <div id="isp">Laden...</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon"><i class="fas fa-globe"></i></div>
+                    <h3>Land</h3>
+                    <div id="country">Laden...</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon"><i class="fas fa-city"></i></div>
+                    <h3>Stad</h3>
+                    <div id="city">Laden...</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon"><i class="fas fa-clock"></i></div>
+                    <h3>Tijdzone</h3>
+                    <div id="timezone">Laden...</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon"><i class="fas fa-network-wired"></i></div>
+                    <h3>Netwerk</h3>
+                    <div id="network">Laden...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tools" class="tools-section">
+        <div class="container">
+            <h2>IP Tools</h2>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <h3>IP Lookup</h3>
+                    <p>Zoek informatie over een specifiek IP-adres</p>
+                    <div class="tool-input">
+                        <input type="text" id="ip-lookup-input" placeholder="Voer een IP-adres in">
+                        <button id="ip-lookup-btn">Zoeken</button>
+                    </div>
+                    <div id="ip-lookup-result" class="tool-result"></div>
+                </div>
+                <div class="tool-card">
+                    <h3>Domein naar IP</h3>
+                    <p>Converteer een domeinnaam naar een IP-adres</p>
+                    <div class="tool-input">
+                        <input type="text" id="domain-lookup-input" placeholder="Voer een domeinnaam in">
+                        <button id="domain-lookup-btn">Zoeken</button>
+                    </div>
+                    <div id="domain-lookup-result" class="tool-result"></div>
+                </div>
+                <div class="tool-card">
+                    <h3>Is mijn IP verborgen?</h3>
+                    <p>Controleer of je IP-adres verborgen is</p>
+                    <button id="check-hidden-btn">Controleren</button>
+                    <div id="hidden-result" class="tool-result"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2>Over MijnIPChecker</h2>
+            <div class="about-content">
+                <p>MijnIPChecker biedt een veilige en betrouwbare manier om informatie over je IP-adres te bekijken. We verzamelen geanonimiseerde gebruiksgegevens voor verbeteringsdoeleinden, maar slaan geen persoonlijk identificeerbare informatie op.</p>
+                <p>Onze tools helpen je om je online privacy te begrijpen en te beschermen. Gebruik onze diensten om meer te weten te komen over je internetverbinding en hoe je online identiteit wordt weergegeven.</p>
+                <p>Heb je vragen of feedback? <a href="contact.html">Neem contact met ons op</a> via ons contactformulier.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>MijnIP<span>Checker</span></h2>
+                    <p>© 2023 MijnIPChecker. Alle rechten voorbehouden.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#ip-info">IP Info</a></li>
+                        <li><a href="#tools">Tools</a></li>
+                        <li><a href="#about">Over Ons</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-privacy">
+                    <h3>Privacy</h3>
+                    <ul>
+                        <li><a href="privacy.html">Privacybeleid</a></li>
+                        <li><a href="terms.html">Gebruiksvoorwaarden</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
